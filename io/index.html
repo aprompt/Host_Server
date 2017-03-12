@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>家居环境监控</title>
+<style type="text/css">
+html {
+	font-family:Sans-serif;
+	font-size:100%;
+	line-height:1.6em;
+	cursor: default;
+	moz-user-select:-moz-none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	-khtml-user-select:none;
+	-webkit-user-select:none;
+	-ms-user-select:none;
+	user-select:none;
+}
+body {
+	text-align:left;
+}
+a {
+	cursor:default;
+	text-decoration:none;
+	color:#000;
+}
+#main {
+	margin:0 auto;
+	width:30em;
+}
+h1 {
+	font-size:1.2em;
+	font-weight:normal;
+}
+button#ctl {
+font-size: 1.2em;
+background-color:#fff;
+border: 2px solid #000;
+border-radius: 0.5em;
+margin: 1em;
+width: 6.5em;
+height: 3em;
+cursor: pointer;
+}
+</style>
+<script type="text/javascript">
+function randomplus(min,max) {
+var str = "",arr=[];
+for(var i=0;i<10;i++) {
+	arr[i]=i;
+}
+for(i;i<36;i++) {
+	arr[i]=String.fromCharCode(55+i);
+}
+for(i;i<62;i++) {
+	arr[i]=String.fromCharCode(61+i);
+}
+min = Math.round(Math.random() * (max-min)) + min;
+for(var i=0; i<min; i++) {
+		pos = Math.round(Math.random() * (arr.length-1));
+		str += arr[pos];
+	}
+return str;
+}
+function getdata() {
+var xmlhttp;
+if (window.XMLHttpRequest) {
+  xmlhttp=new XMLHttpRequest();
+  }
+else {
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+xmlhttp.open("GET","main.php?t=" + randomplus(2,4),true);
+xmlhttp.onreadystatechange=function() {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+	  var ids=['t','h','pm'];
+	  var strs=xmlhttp.responseText.split(",");
+	  for(var i=0;i<ids.length;i++) {
+		  document.getElementById(ids[i]).innerHTML=strs[i];
+	  }
+	  if(strs[3]=='1') {
+	  document.getElementById('s1').innerHTML='已开启';
+	  document.getElementById('s1').style.color='green';
+	  } else if(strs[3]=='0') {
+	  document.getElementById('s1').innerHTML='已关闭';
+	  document.getElementById('s1').style.color='red';
+	  }
+	  if(strs[4]=='1') {
+	  document.getElementById('s2').innerHTML='已开启';
+	  document.getElementById('s2').style.color='green';
+	  } else if(strs[4]=='0') {
+	  document.getElementById('s2').innerHTML='已关闭';
+	  document.getElementById('s2').style.color='red';
+	  }
+	  if(strs[5]=='1') {
+	  document.getElementById('flag').innerHTML='已连接';
+	  document.getElementById('flag').style.color='green';
+	  } else if(strs[5]=='0') {
+	  document.getElementById('flag').innerHTML='连接中断';
+	  document.getElementById('flag').style.color='red';
+	  }
+	  var strpm=document.getElementById('pm').innerHTML;
+	  var pm=parseFloat(strpm);
+	  if(pm>=0&&pm<35) {
+	  document.getElementById('pm').style.color='#4CAF50';
+	  document.getElementById('style').innerHTML='（优）';
+	  }
+	  if(pm>=35&&pm<75) {
+	  document.getElementById('pm').style.color='#FFD700';
+	  document.getElementById('style').innerHTML='（良）';
+	  }	
+	  if(pm>=75&&pm<115) {
+	  document.getElementById('pm').style.color='#FF8C00';
+	  document.getElementById('style').innerHTML='（轻度污染）';
+	  }
+	  if(pm>=115&&pm<150) {
+	  document.getElementById('pm').style.color='#FF0000';
+	  document.getElementById('style').innerHTML='（中度污染）';
+	  }
+	  if(pm>=150&&pm<250) {
+	  document.getElementById('pm').style.color='#800080';
+	  document.getElementById('style').innerHTML='（重度污染）';
+	  }	
+	  if(pm>=250) {
+	  document.getElementById('pm').style.color='#800000';
+	  document.getElementById('style').innerHTML='（严重污染）';
+	  }	  
+    }
+  }
+xmlhttp.send();
+}
+window.setInterval(getdata,1000);
+function sendctl(switchnum) {
+var xmlhttp,code;
+if(document.getElementById('s'+switchnum).innerHTML=='已开启') {
+code='0';
+} else if(document.getElementById('s'+switchnum).innerHTML=='已关闭') {
+code='1';
+}
+if (window.XMLHttpRequest) {
+  xmlhttp=new XMLHttpRequest();
+  }
+else {
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+ xmlhttp.open("GET","main.php?ctrl="+switchnum+code+"&t=" + randomplus(2,4),true);
+ xmlhttp.send();
+}
+</script>
+</head>
+<body>
+<div id="main">
+<div id="box0">
+<div id="leftbox">
+<div class="datatitle">系统状态：</div><span id="flag">检查中...</span>
+<div class="datatitle">实时信息：</div>
+<div class="databox">
+<div class="datatext">温度( ℃ )：</div>
+<span id="t">-0</span></div>
+<div class="databox">
+<div class="datatext">湿度( % )：</div>
+<span id="h">-0</span></div>
+<div class="databox">
+<div class="datatext">PM 2.5：</div>
+<span id="pm">-0</span><span id="style"><span></div>
+</div></div>
+<div id="box1">
+<div id="rightbox">
+<div class="ctrltitle">远程控制</div>
+<div id="ctrler">
+<span id="s1">开关1</span>
+<button id = "ctl" type = "button" onclick="sendctl('1')">空调器</button>
+<span id="s2">开关2</span>
+<button id = "ctl" type = "button" onclick="sendctl('2')">净化器</button></div>
+</div></div>
+
+</div>
+</body>
+</html>
